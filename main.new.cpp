@@ -66,11 +66,55 @@ star rotate_star(star *the_star) {
   return projected;
 }
 
-void draw_stars(SDL_Surface *screen, star *field, unsigned int size) {
-  xA += 0.001;
-  yA += 0.003;
-  zA += 0.005;
+int nextSeed = 0;
+float targetZAng, targetXAng, targetYAng;
 
+#define PI 3.14159256
+
+void rotate_camera() {
+    if(nextSeed <= 0) {
+        unsigned char rotateBits = rand() % 7;
+        if(rotateBits & 0x1){
+            targetZAng = get_rand_range(-180*(PI/180.0),180*(PI/180.0));
+        }
+        if(rotateBits & 0x2){
+            targetXAng = get_rand_range(-180*(PI/180.0),180*(PI/180.0));
+        }
+        if(rotateBits & 0x4){
+            targetYAng = get_rand_range(-180*(PI/180.0),180*(PI/180.0));
+        }
+        nextSeed = 400 + rand()%1200;
+    }
+    nextSeed--;
+    if(xA < targetXAng) {
+        xA +=0.005;
+    }
+    
+    if(xA > targetXAng) {
+        xA -=0.005;
+    }
+    
+    if(yA < targetYAng) {
+        yA +=0.005;
+    }
+    
+    if(yA > targetYAng) {
+        yA -=0.005;
+    }
+    
+    if(zA < targetZAng) {
+        zA +=0.005;
+    }
+    
+    if(zA > targetZAng) {
+        zA -=0.005;
+    }
+}
+
+void draw_stars(SDL_Surface *screen, star *field, unsigned int size) {
+  
+    rotate_camera();
+    
   for (unsigned int s = 0; s < size; s++) {
     star tmp = field[s];
     tmp = rotate_star(&tmp);
