@@ -16,7 +16,7 @@
         const bootstrap = () => { 
                 createStarfield().then((m)=>{ 
                     m.canvas =(function() { return document.getElementById('canvas'); })(); 
-                    m._main() 
+                    m._run(window.innerWidth, window.innerHeight); 
                 });
         }
         if(window.createStarfield) {

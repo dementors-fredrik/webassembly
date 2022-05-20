@@ -8,10 +8,19 @@
 #include <emscripten.h>
 #endif
 
-#define WIDTH 800
-#define HEIGHT 600
-#define CENTER_X (WIDTH / 2.0)
-#define CENTER_Y (HEIGHT / 2.0)
+int WIDTH = 320;
+int HEIGHT = 240;
+
+int CENTER_X = (WIDTH / 2);
+int CENTER_Y = (HEIGHT / 2);
+
+void setSize(float w, float h) {
+  WIDTH = w;
+  HEIGHT = h;
+
+  CENTER_X = (WIDTH / 2.0);
+  CENTER_Y = (HEIGHT / 2.0);
+}
 
 #define INTERNAL_SPEED 20
 
@@ -25,9 +34,8 @@ typedef struct {
   float size;
 } star;
 
-
 float compare_with_tresh(float a, float b, float tresh) {
-  if(a > b-tresh && a < b+tresh ) {
+  if (a > b - tresh && a < b + tresh) {
     return true;
   }
   return false;
@@ -46,7 +54,7 @@ float *init_zbuffer() {
 }
 
 Uint8 *init_cbuffer() {
-  return (Uint8*)malloc(WIDTH * HEIGHT * sizeof(Uint8));
+  return (Uint8 *)malloc(WIDTH * HEIGHT * sizeof(Uint8));
 }
 
 void clear_zbuffer() {
@@ -56,18 +64,18 @@ void clear_zbuffer() {
 }
 
 void clear_cbuffer() {
-  for(int j=0;j<WIDTH*HEIGHT;j++) {
+  for (int j = 0; j < WIDTH * HEIGHT; j++) {
     cbuffer[j] = 0;
   }
 }
 
 void interpolate_z_from_cbuffer() {
-  for(int j=1;j<(WIDTH*HEIGHT)-1;j++) {
-    float delta = cbuffer[j-1] - cbuffer[j];
-    if(cbuffer[j]>0) {
-      zbuffer[j]+= delta > 0 ? 0.1 : -0.1;
+  for (int j = 1; j < (WIDTH * HEIGHT) - 1; j++) {
+    float delta = cbuffer[j - 1] - cbuffer[j];
+    if (cbuffer[j] > 0) {
+      zbuffer[j] += delta > 0 ? 0.1 : -0.1;
     } else {
-      zbuffer[j]=20.0;
+      zbuffer[j] = 20.0;
     }
   }
 }
@@ -86,24 +94,23 @@ star *init_starfield(unsigned int stars) {
     field[s].z = get_rand_range(-RANGE / 2, RANGE / 2);
     //      field[s].y = sin(s/1000.0)*cos(s/20.0) * 10.0;
     //      field[s].z = cos(s/1000.0)*sin(s/20.0) * 10.0;
-    field[s].xv = get_rand_range(0.004, 0.01); //(((rand() % 100) / 1000.0) / 5.0) + 0.01;
-    field[s].yv = 0;//get_rand_range(-0.005, 0.005);
-    field[s].zv = 0;//get_rand_range(-0.005, 0.005);
-    field[s].size = get_rand_range(1, 5);;
-    if(rand()%100 < 5) {
+    field[s].xv =
+        get_rand_range(0.004, 0.01); //(((rand() % 100) / 1000.0) / 5.0) + 0.01;
+    field[s].yv = 0;                 // get_rand_range(-0.005, 0.005);
+    field[s].zv = 0;                 // get_rand_range(-0.005, 0.005);
+    field[s].size = get_rand_range(1, 5);
+    ;
+    if (rand() % 100 < 5) {
       field[s].size = get_rand_range(15, 100);
     }
-    
-   
   }
   update_stars(field, stars);
   return field;
 }
 
 float zA = 1.3, xA = 1.5, yA = 1.2, FOV = 25.0;
-float targetZAng=1.3, targetXAng = 1.5, targetYAng=1.2, targetFOV = 25.0;
-int nextSeed = 100*INTERNAL_SPEED;
-
+float targetZAng = 1.3, targetXAng = 1.5, targetYAng = 1.2, targetFOV = 25.0;
+int nextSeed = 100 * INTERNAL_SPEED;
 
 star rotate_star(star *the_star) {
   star projected;
@@ -126,7 +133,6 @@ star rotate_star(star *the_star) {
   return projected;
 }
 
-
 #define PI 3.14159256
 
 void rotate_camera() {
@@ -141,42 +147,41 @@ void rotate_camera() {
     if (rotateBits & 0x4) {
       targetYAng = get_rand_range(-180 * (PI / 180.0), 360 * (PI / 180.0));
     }
-    //if (rotateBits & 0x8 && compare_with_tresh(FOV, targetFOV, 1.0)) {
-      if(targetFOV > 300.0) {
-       targetFOV = get_rand_range(25.0,50.0);        
-      } else {
-       targetFOV = get_rand_range(150.0,1000.0);                
-      }
+    // if (rotateBits & 0x8 && compare_with_tresh(FOV, targetFOV, 1.0)) {
+    if (targetFOV > 300.0) {
+      targetFOV = get_rand_range(25.0, 50.0);
+    } else {
+      targetFOV = get_rand_range(150.0, 1000.0);
+    }
     //}
-    nextSeed = (400*INTERNAL_SPEED) + (rand() % 1200)*INTERNAL_SPEED;
+    nextSeed = (400 * INTERNAL_SPEED) + (rand() % 1200) * INTERNAL_SPEED;
   }
   nextSeed--;
-  
-  FOV+=(targetFOV-FOV)/((float)INTERNAL_SPEED*100.);
-  
+
+  FOV += (targetFOV - FOV) / ((float)INTERNAL_SPEED * 100.);
 
   if (xA < targetXAng) {
-    xA += 0.005/(float)INTERNAL_SPEED;
+    xA += 0.005 / (float)INTERNAL_SPEED;
   }
 
   if (xA > targetXAng) {
-    xA -= 0.005/(float)INTERNAL_SPEED;
+    xA -= 0.005 / (float)INTERNAL_SPEED;
   }
 
   if (yA < targetYAng) {
-    yA += 0.005/(float)INTERNAL_SPEED;
+    yA += 0.005 / (float)INTERNAL_SPEED;
   }
 
   if (yA > targetYAng) {
-    yA -= 0.005/(float)INTERNAL_SPEED;
+    yA -= 0.005 / (float)INTERNAL_SPEED;
   }
 
   if (zA < targetZAng) {
-    zA += 0.005/(float)INTERNAL_SPEED;
+    zA += 0.005 / (float)INTERNAL_SPEED;
   }
 
   if (zA > targetZAng) {
-    zA -= 0.005/(float)INTERNAL_SPEED;
+    zA -= 0.005 / (float)INTERNAL_SPEED;
   }
 }
 
@@ -201,7 +206,8 @@ void draw_filled_circle(SDL_Surface *screen, float x, float y, float z, int r) {
         Uint32 color = SDL_MapRGBA(screen->format, (0x99 - (d)) - zBase,
                                    (0x99 - (d / 2)) - zBase,
                                    (0xBB - (d * 3)) - zBase, 0xff);
-        draw_pixel(screen, x + i - (r / 2), y + j - (r / 2), z-(d*2), color);
+        draw_pixel(screen, x + i - (r / 2), y + j - (r / 2), z - (d * 2),
+                   color);
       }
     }
 }
@@ -219,24 +225,23 @@ void draw_shaded_circle(SDL_Surface *screen, float x, float y, float z, float r,
 
 float wave = 0.0;
 
+int compare(const void *a, const void *b) {
+  star as = *((star *)a);
+  star bs = *((star *)b);
 
-
-int compare( const void* a, const void* b)
-{
-     star as = * ( (star*) a );
-     star bs = * ( (star*) b );
-
-     if ( compare_with_tresh(as.z, bs.z,0.0001 )) return 0;
-     else if ( as.z < bs.z ) return -1;
-     else return 1;
+  if (compare_with_tresh(as.z, bs.z, 0.0001))
+    return 0;
+  else if (as.z < bs.z)
+    return -1;
+  else
+    return 1;
 }
 
 void draw_stars(SDL_Surface *screen, star *field, unsigned int size) {
 
   rotate_camera();
 
-
-  qsort( field, 6, sizeof(int), compare );
+  qsort(field, 6, sizeof(int), compare);
 
   for (unsigned int s = 0; s < size; s++) {
     star tmp = field[s];
@@ -244,25 +249,24 @@ void draw_stars(SDL_Surface *screen, star *field, unsigned int size) {
     float z = tmp.z;
 
     float Cz = 0.004;
-    float fovScale = FOV/1000.0;
+    float fovScale = FOV / 1000.0;
 
-    if (z > 0.5*fovScale && z <= 5.0*fovScale*20.0) {
+    if (z > 0.5 * fovScale && z <= 5.0 * fovScale * 20.0) {
       unsigned int x = (tmp.x * FOV / (Cz + z)) + CENTER_X;
       unsigned int y = (tmp.y * FOV / (Cz + z)) + CENTER_Y;
 
       if (x > 0 && x < WIDTH && y > 0 && y < HEIGHT) {
-        float size = fovScale * (tmp.size/(z*0.8));
-        if(size > 1. && size < 150.) {
+        float size = fovScale * (tmp.size / (z * 0.8));
+        if (size > 1. && size < 150.) {
           draw_filled_circle(screen, x, y, tmp.z, size);
         } else {
-           float zBase = z * 10.0;
-          Uint32 color = SDL_MapRGBA(screen->format, (0x77 - (zBase)),
-                                   (0x66 - (zBase / 2)),
-                                   (0x99 - (zBase * 3)) , 0xff);
-          draw_pixel(screen, x  , y  , z, color);
+          float zBase = z * 10.0;
+          Uint32 color =
+              SDL_MapRGBA(screen->format, (0x77 - (zBase)),
+                          (0x66 - (zBase / 2)), (0x99 - (zBase * 3)), 0xff);
+          draw_pixel(screen, x, y, z, color);
         }
       }
-
     }
   }
 }
@@ -294,36 +298,39 @@ void update_stars(star *field, unsigned int size) {
 
 inline Uint8 fade_value(Uint8 v, Uint8 speed) {
   const Uint8 fade_speed = speed;
-  if(v-fade_speed>0) {
-    return v-fade_speed;
-  } else if(v>0) {
-    return v-1;
+  if (v - fade_speed > 0) {
+    return v - fade_speed;
+  } else if (v > 0) {
+    return v - 1;
   }
   return v;
 }
 
 void blur_fade(SDL_Surface *screen) {
-  for(int y=0;y<HEIGHT;y++) {
-    for(int x=0;x<WIDTH;x++) {
-      Uint32 *pixel = &((Uint32*)screen->pixels)[y*WIDTH+x];
-      Uint8 r,g,b,a;
+  for (int y = 0; y < HEIGHT; y++) {
+    for (int x = 0; x < WIDTH; x++) {
+      Uint32 *pixel = &((Uint32 *)screen->pixels)[y * WIDTH + x];
+      Uint8 r, g, b, a;
       SDL_GetRGBA(*pixel, screen->format, &r, &g, &b, &a);
-      
-      r=fade_value(r,32);
-      g=fade_value(g,32);
-      b=fade_value(b,18);
-      a=fade_value(a,16);
 
-      *pixel = SDL_MapRGBA(screen->format, r,g,b,a);
+      r = fade_value(r, 32);
+      g = fade_value(g, 32);
+      b = fade_value(b, 18);
+      a = fade_value(a, 16);
+
+      *pixel = SDL_MapRGBA(screen->format, r, g, b, a);
     }
   }
 }
 
-extern "C" int main(int argc, char **argv) {
+EMSCRIPTEN_KEEPALIVE
+extern "C" int run(int width, int height) {
+  setSize(width, height);
   srand(time(NULL));
 
   SDL_Init(SDL_INIT_VIDEO);
-  SDL_Surface *screen = SDL_SetVideoMode(WIDTH, HEIGHT, 32, SDL_SWSURFACE);
+  SDL_Surface *screen =
+      SDL_SetVideoMode(WIDTH, HEIGHT, 32, SDL_SWSURFACE | SDL_DOUBLEBUF);
   star *field = init_starfield(STARS);
   zbuffer = init_zbuffer();
   cbuffer = init_cbuffer();
@@ -335,18 +342,18 @@ extern "C" int main(int argc, char **argv) {
       SDL_LockSurface(screen);
     clear_zbuffer();
 
-  //  memset(screen->pixels, 0, WIDTH * HEIGHT * 4);
-      blur_fade(screen);
+    //  memset(screen->pixels, 0, WIDTH * HEIGHT * 4);
+    blur_fade(screen);
 
-    for(int speed=0;speed<INTERNAL_SPEED;speed++) {
+    for (int speed = 0; speed < INTERNAL_SPEED; speed++) {
       update_stars(field, STARS);
       draw_stars(screen, field, STARS);
     }
-    
+
     if (SDL_MUSTLOCK(screen))
       SDL_UnlockSurface(screen);
     SDL_Flip(screen);
-    emscripten_sleep(16);
+    emscripten_sleep(5);
   }
 
   SDL_Quit();
