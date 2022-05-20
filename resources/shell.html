@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+
+<body style="background-color: black;">
+    <canvas id="canvas" oncontextmenu="event.preventDefault()" style="margin-left:auto;margin-right:auto;display:block;"></canvas>
+
+    {{{ SCRIPT }}}     
+
+    <script type='text/javascript'>
+    window.addEventListener('DOMContentLoaded', (event) => {
+        const bootstrap = () => { 
+                createStarfield().then((m)=>{ 
+                    m.canvas =(function() { return document.getElementById('canvas'); })(); 
+                    m._main() 
+                });
+        }
+        if(window.createStarfield) {
+            bootstrap();
+        } else {
+            window.onload = (x) => { 
+                bootstrap();
+            };   
+        }
+    });
+    </script>
+</body>
+
+</html>
+
+
